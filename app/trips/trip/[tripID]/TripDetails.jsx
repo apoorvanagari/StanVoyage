@@ -3,163 +3,162 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "@/app/utils/Loading";
-import mapping from "@/app/data.json";
+
 
 const TripDetails = ({ tripID }) => {
-	const router = useRouter();
+    const router = useRouter();
+    const [data, setData] = useState(null);
 
-	const [data, setData] = useState(null);
+    const getDetails = async () => {
+        const res = await fetch("/api/trips/" + tripID, {
+            method: "GET",
+            credentials: "include",
+        });
 
-	const getDetails = async () => {
-		const res = await fetch("/api/trips/" + tripID, {
-			method: "GET",
-			credentials: "include",
-		});
-		if (res.ok) {
-			const json = await res.json();
-			setData(json);
-			return;
-		}
-		const json = await res.json();
-		alert(json.message);
-		router.push("/trips");
-	};
+        const json = await res.json();
 
-	useEffect(() => {
-		getDetails();
-	}, [tripID]);
+        if (res.ok) {
+            setData(json);
+        } else {
+            alert(json.message);
+            router.push("/trips");
+        }
+    };
 
-	const handleCall = (number) => {
-		window.open(`tel:${number}`);
-	};
+    useEffect(() => {
+        getDetails();
+    }, [tripID]);
 
-	const handleWhatsApp = (number) => {
-		window.open(`https://wa.me/+91${number}`);
-	};
+    const handleCall = (number) => {
+        if (number) window.open(`tel:${number}`);
+    };
 
-	const deleteTrip = async (tripID) => {
-		if (!confirm("Are you sure you want to delete this trip?")) return;
+    const handleWhatsApp = (number) => {
+        if (number) window.open(`https://wa.me/+91${number}`);
+    };
 
-		const res = await fetch("/api/trips/" + tripID, {
-			method: "DELETE",
-			credentials: "include",
-		});
-		if (res.ok) {
-			const json = await res.json();
-			alert(json.message);
-			router.push("/trips/my-trips");
-		} else {
-			const json = await res.json();
-			alert(json.message);
-		}
-	};
+    const deleteTrip = async (tripID) => {
+        if (!confirm("Are you sure you want to delete this trip?")) return;
 
-	return data ? (
-		<div className="bg-white p-6 rounded shadow-md w-full max-w-lg">
-			<h2 className="text-2xl font-bold mb-4 text-center">
-				Trip Details - {data.trip.tripID}
-			</h2>
-			<p>
-				<strong>Name:</strong> {data.trip.name}
-			</p>
-			<p>
-				<strong>Roll Number:</strong> {data.trip.roll}
-			</p>
-			<p>
-				<strong>Mobile Number:</strong> {data.trip.number}
-			</p>
-			<p>
-				<strong>Email: </strong> {data.trip.email}
-			</p>
-			<p>
-				<strong>Source:</strong> {mapping.locations[data.trip.source]}
-			</p>
-			<p>
-				<strong>Destination:</strong>{" "}
-				{mapping.locations[data.trip.destination]}
-			</p>
-			<p>
-				<strong>Date:</strong> {new Date(data.trip.date).toDateString()}
-				&nbsp;&nbsp;
-				<strong>Time Slot:</strong> {mapping.slots[data.trip.time]}
-			</p>
+        const res = await fetch("/api/trips/" + tripID, {
+            method: "DELETE",
+            credentials: "include",
+        });
 
-			<h3 className="text-lg font-semibold mt-4">
-				Common Trips (within +/- 3 hours):
-			</h3>
-			<ul className="mt-2">
-				{data.similiar.length === 0 && (
-					<p>No common trips found! Please check again later.</p>
-				)}
-				{data.similiar.map((trip, idx) => (
-					<li key={idx} className="border p-2 my-2">
-						<p>
-							<strong>Name:</strong> {trip.name}
-						</p>
-						<p>
-							<strong>Roll Number:</strong> {trip.roll}
-						</p>
-						<p>
-							<strong>Mobile Number:</strong> {trip.number}
-							<button
-								onClick={() => handleCall(trip.number)}
-								className="ml-2 bg-blue-500 text-white p-1 px-2 rounded"
-							>
-								Call
-							</button>
-							<button
-								onClick={() => handleWhatsApp(trip.number)}
-								className="ml-2 bg-green-500 text-white p-1 px-2 rounded"
-							>
-								WhatsApp
-							</button>
-						</p>
-						<p>
-							<strong>Email: </strong>{" "}
-							<a href={`mailto:${trip.email}`} target="_blank">
-								{trip.email}
-							</a>
-						</p>
-						<p>
-							<strong>Source:</strong>{" "}
-							{mapping.locations[trip.source]}
-						</p>
-						<p>
-							<strong>Destination:</strong>{" "}
-							{mapping.locations[trip.destination]}
-						</p>
-						<p>
-							<strong>Date:</strong>{" "}
-							{new Date(trip.date).toDateString()}
-							&nbsp;&nbsp;
-							<strong>Time Slot:</strong>{" "}
-							{mapping.slots[trip.time]}
-						</p>
-					</li>
-				))}
-			</ul>
-			<button
-				onClick={() => router.push("/trips/my-trips")}
-				className="mt-2 w-full btn btn-primary"
-			>
-				My Trips
-			</button>
-			<button
-				onClick={() => deleteTrip(data.trip.tripID)}
-				className="mt-2 w-full btn btn-danger"
-			>
-				Delete this Trip
-			</button>
-			<button
-				onClick={() => router.push("/trips")}
-				className="mt-2 w-full btn btn-secondary"
-			>
-				Back to Trips Page
-			</button>
-		</div>
-	) : (
-		<Loading />
-	);
+        const json = await res.json();
+
+        if (res.ok) {
+            alert(json.message);
+            router.push("/trips/my-trips");
+        } else {
+            alert(json.message);
+        }
+    };
+
+    // -------------------------------
+    // Render
+    // -------------------------------
+    return data ? (
+        <div className="bg-white p-6 rounded shadow-md w-full max-w-lg">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+                Trip Details - {data.trip.tripID}
+            </h2>
+
+            {/* USER DETAILS */}
+            <p><strong>Name:</strong> {data.user?.name || "Not Available"}</p>
+            <p><strong>Roll Number:</strong> {data.user?.roll || "Not Available"}</p>
+            <p><strong>Mobile Number:</strong> {data.user?.number || "Not Available"}</p>
+
+            <p><strong>Email:</strong> {data.trip.email}</p>
+
+            {/* TRIP DETAILS */}
+            <p><strong>Source:</strong> {data.trip.source}</p>
+            <p><strong>Destination:</strong> {data.trip.destination}</p>
+
+            <p>
+                <strong>Date:</strong> {new Date(data.trip.date).toDateString()}
+                &nbsp;&nbsp;
+                <strong>Time Slot:</strong> {data.trip.time}
+            </p>
+
+            {/* SIMILAR TRIPS */}
+            <h3 className="text-lg font-semibold mt-4">
+                Common Trips (within +/- 3 hours):
+            </h3>
+
+            <ul className="mt-2">
+                {data.similar.length === 0 && (
+                    <p>No common trips found! Please check again later.</p>
+                )}
+
+                {data.similar.map((trip, idx) => (
+                    <li key={idx} className="border p-2 my-2">
+
+                        <p><strong>Name:</strong> {trip.name || "Not Available"}</p>
+                        <p><strong>Roll Number:</strong> {trip.roll || "Not Available"}</p>
+
+                        <p>
+                            <strong>Mobile Number:</strong> {trip.number || "Not Available"}
+                            {trip.number && (
+                                <>
+                                    <button
+                                        onClick={() => handleCall(trip.number)}
+                                        className="ml-2 bg-blue-500 text-white p-1 px-2 rounded"
+                                    >
+                                        Call
+                                    </button>
+                                    <button
+                                        onClick={() => handleWhatsApp(trip.number)}
+                                        className="ml-2 bg-green-500 text-white p-1 px-2 rounded"
+                                    >
+                                        WhatsApp
+                                    </button>
+                                </>
+                            )}
+                        </p>
+
+                        <p>
+                            <strong>Email:</strong>{" "}
+                            <a href={`mailto:${trip.email}`}>{trip.email}</a>
+                        </p>
+
+                        <p><strong>Source:</strong> {trip.source}</p>
+                        <p><strong>Destination:</strong> {trip.destination}</p>
+
+                        <p>
+                            <strong>Date:</strong>{" "}
+                            {new Date(trip.date).toDateString()}
+                            &nbsp;&nbsp;
+                            <strong>Time Slot:</strong> {trip.time}
+                        </p>
+                    </li>
+                ))}
+            </ul>
+
+            <button
+                onClick={() => router.push("/trips/my-trips")}
+                className="mt-2 w-full btn btn-primary"
+            >
+                My Trips
+            </button>
+
+            <button
+                onClick={() => deleteTrip(data.trip.tripID)}
+                className="mt-2 w-full btn btn-danger"
+            >
+                Delete this Trip
+            </button>
+
+            <button
+                onClick={() => router.push("/trips")}
+                className="mt-2 w-full btn btn-secondary"
+            >
+                Back to Trips Page
+            </button>
+        </div>
+    ) : (
+        <Loading />
+    );
 };
 
 export default TripDetails;

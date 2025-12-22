@@ -25,15 +25,19 @@ const userSchema = new Schema({
 		required: [true, "Please provide an email"],
 		unique: true,
 	},
+
+	password: {
+		type: String,
+		required: true,
+	},
 	instituteCode: {
 		type: String,
-		required: [true, "Please provide an institute code"],
-		ref: "Institute",
+		required:false,
 	},
 });
 
 // Indexes to speed up common lookups
-userSchema.index({ email: 1 }, { unique: true });
+
 userSchema.index({ instituteCode: 1 });
 
 const User = models.User || model("User", userSchema);

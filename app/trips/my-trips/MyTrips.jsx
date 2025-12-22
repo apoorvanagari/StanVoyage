@@ -68,7 +68,7 @@ const MyTrips = () => {
 											<td>{trip.source}</td>
 											<td>{trip.destination}</td>
 											<td>{trip.date}</td>
-											<td>{mapping.slots[trip.time]}</td>
+											<td>{trip.time}</td>
 										</tr>
 									))}
 								</tbody>

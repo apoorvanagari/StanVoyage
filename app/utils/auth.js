@@ -72,11 +72,12 @@ export async function checkAuth() {
 	return session.email;
 }
 
-export async function requireUser({ redirectPath = "/" } = {}) {
-	"use server";
-	const session = await getSession();
+ export async function requireUser({ redirectPath = "/" } = {}) {
+   "use server";
+   const session = await getSession();
 
-	if (session) return session;
+   if (session) return session;
+   redirect("/login?redirect_url=" + encodeURIComponent(redirectPath));
+ }
 
-	redirect("/authenticate?redirect_url=" + encodeURIComponent(redirectPath));
-}
+
