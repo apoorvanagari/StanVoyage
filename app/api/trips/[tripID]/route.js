@@ -28,13 +28,26 @@ export async function GET(req, { params }) {
         // ⭐ Fetch user info (the missing piece)
         const user = await User.findOne({ email: trip.email }).lean();
 
-        // Fetch similar trips
-        const similar = await Trip.find({
+        const similarTrips = await Trip.find({
             tripID: { $ne: numericID },
             source: trip.source,
             destination: trip.destination,
             date: trip.date,
         });
+
+    // 🔥 Merge user data
+        const similar = await Promise.all(
+            similarTrips.map(async (t) => {
+            const user = await User.findOne({ email: t.email }).lean();
+
+            return {
+                ...t.toObject(),
+                name: user?.name,
+                roll: user?.roll,
+                number: user?.number,
+            };
+        })
+    );
 
         return Response.json(
             {
